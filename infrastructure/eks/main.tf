@@ -11,112 +11,90 @@ locals {
     "AccountID"                 = "${var.aws_account_id}"
   }
 }
+
+data "aws_ami" "bottlerocket_ami" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["bottlerocket-aws-k8s-${var.cluster_version}-x86_64-*"]
+  }
+}
+
+resource "tls_private_key" "nodes" {
+  algorithm = "RSA"
+}
+
+resource "aws_key_pair" "nodes" {
+  key_name   = "bottlerocket-nodes-${random_string.suffix.result}"
+  public_key = tls_private_key.nodes.public_key_openssh
+}
+
+
+# https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/17.24.0
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.34.0" # Updated to the latest stable version
+  version = "17.24.0" # <18
 
-  cluster_name      = var.cluster_name
-  cluster_version   = var.cluster_version
-  vpc_id            = var.vpc_id
-  subnet_ids        = var.private_subnets
-
-  enable_irsa = true
+  cluster_version = var.cluster_version
+  cluster_name    = var.cluster_name
+  vpc_id          = var.vpc_id
+  subnets         = var.private_subnets
+  enable_irsa     = true
 
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = false
-  enable_cluster_creator_admin_permissions = true
 
-  create_node_security_group = false
+  cluster_create_security_group = false
+  cluster_security_group_id     = aws_security_group.cluster-sg.id
 
-  cluster_security_group_additional_rules = {
-    hybrid-all = {
-      cidr_blocks = [var.vpc_cidr]
-      description = "Allow all traffic from remote node/pod network"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "all"
-      type        = "ingress"
-    }
-  }
+  manage_cluster_iam_resources = false
+  cluster_iam_role_name        = aws_iam_role.cluster-role.name
 
-  #cluster_security_group_id     = var.cluster_security_group_id
+  manage_worker_iam_resources = false
 
-
-
-  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  cluster_enabled_log_types = ["audit", "api", "authenticator", "controllerManager", "scheduler"]
 
   cluster_encryption_config = [
     {
-      provider_key_arn = aws_kms_key.eks.arn
+      provider_key_arn = aws_kms_key.this.arn
       resources        = ["secrets"]
     }
   ]
 
-  self_managed_node_groups = {
-    system = {
-      ami_type      = "BOTTLEROCKET_x86_64"
-      instance_type = "t3.medium"
 
-      min_size = 2
-      max_size = 3
-      # This value is ignored after the initial creation
-      # https://github.com/bryantbiggs/eks-desired-size-hack
-      desired_size = 2
-    #   iam_role_arn = ""
-    #   iam_instance_profile_arn = ""
+  # https://github.com/terraform-aws-modules/terraform-aws-eks/blob/e90c877a741ab3cc4215376a70f7bcc360b6a3d2/examples/bottlerocket/main.tf#L31
+  # https://github.com/terraform-aws-modules/terraform-aws-eks/blob/e90c877a741ab3cc4215376a70f7bcc360b6a3d2/locals.tf#L36
+  worker_groups_launch_template = [
+    # this is recreated when running `terraform apply`, meaning this does not scale
+    {
+      name                                  = "bottlerocket-nodes"
+      ami_id                                = data.aws_ami.bottlerocket_ami.id  #var.worker_ami_id
+      instance_type                         = var.worker_instance_type
+      iam_instance_profile_name             = var.worker_instance_profile_name
 
-    #   # Additional settings
-    #   additional_security_group_ids = [module.eks.cluster_security_group_id]
-    #   create_security_group         = false
+      asg_desired_capacity                  = var.asg_desired_capacity
+      key_name                              = aws_key_pair.nodes.key_name
 
-      # This is not required - demonstrates how to pass additional configuration
-      # Ref https://bottlerocket.dev/en/os/1.19.x/api/settings/
-      bootstrap_extra_args = <<-EOT
-        # The admin host container provides SSH access and runs with "superpowers".
-        # It is disabled by default, but can be disabled explicitly.
-        [settings.host-containers.admin]
-        enabled = false
+      public_ip = false
 
-        # The control host container provides out-of-band access via SSM.
-        # It is enabled by default, and can be disabled if you do not expect to use SSM.
-        # This could leave you with no way to access the API and change settings on an existing node!
-        [settings.host-containers.control]
-        enabled = true
-
-        # extra args added
-        [settings.kernel]
-        lockdown = "integrity"
-      EOT
+      userdata_template_file                = "${path.module}/userdata.toml"
+      metadata_http_endpoint                = "enabled"  # The state of the metadata service: enabled, disabled.
+      metadata_http_tokens                  = "required" # If session tokens are required: optional, required.
+      metadata_http_put_response_hop_limit  = 2          # The desired HTTP PUT response hop limit for instance metadata requests.
+      userdata_template_extra_args = {
+        enable_admin_container   = false
+        enable_control_container = true
+        aws_region               = var.aws_region
+      }
+      # example of k8s/kubelet configuration via additional_userdata
+      additional_userdata = <<EOT
+[settings.kubernetes.node-labels]
+ingress = "allowed"
+EOT
     }
-  }
+  ]
 
-  cluster_addons = {
-    coredns                = {}
-    kube-proxy             = {}
-    vpc-cni                = {}
-    aws-ebs-csi-driver     = {}
-    aws-efs-csi-driver     = {}
-    amazon-cloudwatch-observability ={}
-
-  }
-
-  tags = local.common_tags       
+  tags = local.common_tags
 }
-
-# ------------------------------
-# KMS ENCRYPTION CONFIGURATION
-# ------------------------------
-resource "aws_kms_key" "eks" {
-  description             = "${var.cluster_name}-eks-secrets-encryption"
-  deletion_window_in_days = 10
-  enable_key_rotation     = true
-  tags                    = local.common_tags 
-
-}
-
-resource "aws_kms_alias" "eks" {
-  name          = "alias/${var.cluster_name}-eks-key"
-  target_key_id = aws_kms_key.eks.key_id
-}
-
-
