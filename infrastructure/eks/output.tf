@@ -11,3 +11,8 @@ output "eks_cluster_oidc_issuer_url" {
 output "eks_cluster_oidc_issuer_arn" {
   value = module.eks.oidc_provider_arn
 }
+
+output "oidc_provider_stripped" {
+  description = "OIDC provider URL without https://"
+  value       = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+}

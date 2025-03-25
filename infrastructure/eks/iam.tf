@@ -67,32 +67,81 @@ resource "aws_iam_instance_profile" "worker-i" {
 }
 
 
-# # ------------------------------
-# # KARPENTER ROLE
-# # ------------------------------
-# resource "aws_iam_role" "karpenter-r" {
-#   name               = "${var.cluster_name}-karpenter-r"
-  
-#   assume_role_policy = jsonencode({
-#     "Version": "2012-10-17",
-#     "Statement": [
-#         {
-#             "Sid": "",
-#             "Effect": "Allow",
-#             "Principal": {
-#                 "Federated": module.eks.oidc_provider_arn
-#             },
-#             "Action": "sts:AssumeRoleWithWebIdentity",
-#             "Condition": {
-#                 "StringEquals": {
-#                     "oidc.eks.us-east-1.amazonaws.com/id/:sub": "sts.amazonaws.com",
-#                     "oidc.eks.us-east-1.amazonaws.com/id/8D445462AD6CC9528EBE85A030A4BB22:sub": "system:serviceaccount:karpenter:karpenter"
-#                 }
-#             }
-#         }
-#     ]
-# })
-#   managed_policy_arns = []
+# ------------------------------
+# KARPENTER POLICY AND ROLE
+# ------------------------------
 
-#   tags = local.common_tags
-# }
+resource "aws_iam_policy" "karpenter-p" {
+  name        = "${var.cluster_name}-karpenter-p"
+ 
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    "Statement": [
+        {
+            "Action": [
+                "ec2:CreateLaunchTemplate",
+                "ec2:CreateFleet",
+                "ec2:RunInstances",
+                "ec2:CreateTags",
+                "iam:PassRole",
+                "ec2:TerminateInstances",
+                "ec2:DescribeLaunchTemplates",
+                "ec2:DeleteLaunchTemplate",
+                "ec2:DescribeInstances",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeInstanceTypeOfferings",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeSpotPriceHistory",
+                "ssm:GetParameter",
+                "pricing:DescribeServices",
+                "pricing:GetAttributeValues",
+                "pricing:GetProducts",
+                "ec2:Describe*",
+                "eks:Describe*",
+                "eks:Get*",
+                "kms:ListKeys",
+                "kms:DescribeKey",
+                "kms:DescribeCustomKeyStores",
+                "kms:GetPublicKey"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ],
+    "Version": "2012-10-17"
+})
+
+  tags = local.common_tags
+
+}
+
+
+resource "aws_iam_role" "karpenter-r" {
+  name               = "${var.cluster_name}-karpenter-r"
+  
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": module.eks.oidc_provider_arn
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub": "sts.amazonaws.com",
+                    "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub": "system:serviceaccount:karpenter:karpenter"
+                }
+            }
+        }
+    ]
+})
+  managed_policy_arns = [aws_iam_policy.karpenter-p.arn]
+
+  tags = local.common_tags
+}

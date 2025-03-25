@@ -43,24 +43,24 @@ variable "private_subnets" {
   type        = list(string)
 }
 
-variable "cluster_security_group_id" {
-  description = "ID of the security group associated with the EKS cluster"
-  type        = string
-}
+# variable "cluster_security_group_id" {
+#   description = "ID of the security group associated with the EKS cluster"
+#   type        = string
+# }
 
-variable "cluster_iam_role_name" {
-  description = "Name of the IAM role assigned to the EKS cluster"
-  type        = string
-}
+# variable "cluster_iam_role_name" {
+#   description = "Name of the IAM role assigned to the EKS cluster"
+#   type        = string
+# }
 
 # ------------------------------
 # EKS WORKER NODE CONFIGURATION
 # ------------------------------
 
-variable "worker_ami_id" {
-  description = "AMI ID for the EKS worker nodes"
-  type        = string
-}
+# variable "worker_ami_id" {
+#   description = "AMI ID for the EKS worker nodes"
+#   type        = string
+# }
 
 variable "worker_instance_type" {
   description = "Instance type for the EKS worker nodes (e.g., t3.medium)"
@@ -68,10 +68,10 @@ variable "worker_instance_type" {
   default     = "t3.medium"
 }
 
-variable "worker_instance_profile_name" {
-  description = "Instance profile name for the EKS worker nodes"
-  type        = string
-}
+# variable "worker_instance_profile_name" {
+#   description = "Instance profile name for the EKS worker nodes"
+#   type        = string
+# }
 
 variable "asg_desired_capacity" {
   description = "Desired capacity for the Auto Scaling Group (ASG)"
@@ -79,7 +79,7 @@ variable "asg_desired_capacity" {
   default     = 2
 }
 
-variable "key_pair" {
-  description = "Key pair name used to SSH into EKS worker nodes"
-  type        = string
-}
+# variable "key_pair" {
+#   description = "Key pair name used to SSH into EKS worker nodes"
+#   type        = string
+# }

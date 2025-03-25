@@ -4,8 +4,34 @@ provider "aws" {
 
 terraform {
   backend "s3" {
+    encrypt = true
   }
 }
+
+
+terraform {
+  required_version = ">= 1.0.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.30"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.20"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.12"
+    }
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = ">= 2.0.2"
+    }
+  }
+}
+
 
 provider "helm" {
   kubernetes {
@@ -36,7 +62,7 @@ provider "kubectl" {
 }
 
 data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
+  name = var.cluster_name
 }
 
 provider "kubernetes" {

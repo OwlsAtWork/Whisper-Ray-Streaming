@@ -18,7 +18,7 @@ resource "aws_kms_key" "this" {
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-                    # "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-karpenter-r",
+                    "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-karpenter-r",
                     "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-worker-r"
                 ]
             },
@@ -36,7 +36,7 @@ resource "aws_kms_key" "this" {
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-                    # "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-karpenter-r",
+                    "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-karpenter-r",
                     "arn:aws:iam::${var.aws_account_id}:role/${var.cluster_name}-worker-r"
                 ]
             },
@@ -58,6 +58,6 @@ resource "aws_kms_key" "this" {
 }
 
 resource "aws_kms_alias" "this" {
-  name          = "${var.cluster_name}-kms"
+  name          = "alias/${var.cluster_name}-kms"
   target_key_id = aws_kms_key.this.key_id
 }

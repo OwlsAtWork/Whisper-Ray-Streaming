@@ -22,6 +22,12 @@ data "aws_ami" "bottlerocket_ami" {
   }
 }
 
+resource "random_string" "suffix" {
+  length  = 8
+  special = false
+}
+
+
 resource "tls_private_key" "nodes" {
   algorithm = "RSA"
 }
@@ -72,7 +78,7 @@ module "eks" {
       name                                  = "bottlerocket-nodes"
       ami_id                                = data.aws_ami.bottlerocket_ami.id  #var.worker_ami_id
       instance_type                         = var.worker_instance_type
-      iam_instance_profile_name             = var.worker_instance_profile_name
+      iam_instance_profile_name             = "${var.cluster_name}-worker-i"
 
       asg_desired_capacity                  = var.asg_desired_capacity
       key_name                              = aws_key_pair.nodes.key_name
@@ -97,4 +103,13 @@ EOT
   ]
 
   tags = local.common_tags
+
+  depends_on = [ 
+    aws_iam_role.cluster-role,
+    aws_iam_role.worker-role,
+    aws_iam_instance_profile.worker-i,
+    aws_kms_key.this,
+    aws_security_group.cluster-sg
+    
+   ]
 }
