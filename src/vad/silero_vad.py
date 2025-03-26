@@ -16,7 +16,9 @@ logger.setLevel(logging.INFO)
 
 @serve.deployment(
     ray_actor_options={"num_cpus": 1},
-    autoscaling_config={"min_replicas": 1, "max_replicas": 1},
+    autoscaling_config={"min_replicas": 1, "max_replicas": 2, "target_num_ongoing_requests_per_replica": 5},
+    max_ongoing_requests=5,
+
 )
 class SileroVAD(VADInterface):
     """Silero-based implementation of the VADInterface."""
