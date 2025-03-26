@@ -1,9 +1,9 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 INFRA_ROOT := $(GIT_ROOT)/infra
 VERSION ?= local
-RELEASE_VERSION ?= v3
+RELEASE_VERSION ?= v1
 TF_INFRA_ROOT := $(INFRA_ROOT)
-ECR_REPO_BASE_URL = 975226449092.dkr.ecr.us-east-1.amazonaws.com
+ECR_REPO_BASE_URL = 626635410672.dkr.ecr.us-east-1.amazonaws.com
 WHISPER_RAY_SERVICE_REPO_URL = $(ECR_REPO_BASE_URL)/whisper-ray-service
 EKS_CLUSTER_NAME := kuberay-cluster
 REGION = us-east-1
