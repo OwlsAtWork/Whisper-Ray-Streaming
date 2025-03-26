@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whisper-streaming
+  namespace: app
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:626635410672:certificate/d195797f-52a7-4423-8b42-3dadae1700f8
+    alb.ingress.kubernetes.io/group.name: jarvis-whisper
+    alb.ingress.kubernetes.io/load-balancer-name: jarvis-whisper-alb
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/connection-idle-timeout: "3600"
+    alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=true"
+    alb.ingress.kubernetes.io/success-codes: "200-499"
+    alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: whisper.jarvis.onebyzero.ai,whisper-serve.jarvis.onebyzero.ai
+
+spec:
+  ingressClassName: alb
+  rules:
+    # Rule for frontend host routing to port 8265
+    - host: whisper.jarvis.onebyzero.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whisper-streaming-head-svc
+                port:
+                  number: 8265
+
+    # Rule for backend host routing to port 8000
+    - host: whisper-serve.jarvis.onebyzero.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whisper-streaming-serve-svc
+                port:
+                  number: 8000
