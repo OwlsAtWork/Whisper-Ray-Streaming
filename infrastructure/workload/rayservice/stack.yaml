@@ -36,7 +36,7 @@ spec:
                       key: token
               #image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
               #image: rayproject/ray-ml:2.9.2-py310
-              image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
+              image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v1
               imagePullPolicy: Always
               name: ray-head
               
@@ -93,7 +93,7 @@ spec:
                       secretKeyRef:
                         name: hf-token
                         key: token
-                image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
+                image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v1
                 imagePullPolicy: Always
                 name: ray-worker
                 resources:
@@ -117,7 +117,7 @@ spec:
       - name: default
         import_path: src.voice_stream_ai_server:entrypoint
         runtime_env:
-          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/c36189e1bf5ec3c170f1f50307aa95e0fd9d8dd63acf6d6c236191c0e022e681.zip"
+          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/9de79755357d5f52b6b40457ea2362b001c3d1703419333889533cbd65ca80da.zip"
         deployments:
         - name: TranscriptionServer
           max_concurrent_queries: 100
