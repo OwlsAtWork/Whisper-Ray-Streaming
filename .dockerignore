@@ -1,0 +1,89 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.pyo
+*.egg
+*.egg-info
+*.log
+*.bak
+*.swp
+*.tmp
+
+# Ignore Terraform state files and backup files
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.terraform/
+*.plan
+
+# Ignore Kubernetes manifests and Helm values (for local dev only)
+infra_jarvis/helm-values/
+infra_staging/helm-values/
+infra_staging_voice/helm-values/
+infrastructure/helmcharts/
+infrastructure/
+infra_jarvis/
+infra_staging/
+infra_staging_voice/
+**ingress**
+# Ignore temporary and sensitive files
+.env
+.env.*
+*.iml
+*.idea/
+*.vscode/
+*.DS_Store
+*.git
+*.gitignore
+*.gitattributes
+
+# Ignore logs and runtime files
+logs/
+*.log
+*.out
+*.pid
+*.lock
+*.sock
+
+# Ignore build artifacts and compiled code
+*.o
+*.a
+*.so
+*.exe
+*.dll
+*.dylib
+*.bin
+*.class
+*.jar
+
+# # Ignore audio and media files not required in the build
+# debug_audio.wav
+# recording_*.wav
+# img/
+# locust/data/
+
+# Ignore documentation and markdown files
+README.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+LICENSE
+
+# Ignore test and development files
+test/
+*.test.py
+test.py
+
+# Ignore Docker-related artifacts
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+
+# Ignore any backup or temporary files
+*.bak
+*~
+*.swp
+*.tmp
+*.old

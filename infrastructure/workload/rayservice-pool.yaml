@@ -1,0 +1,122 @@
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: rayservice-worker
+spec:
+  template:
+    metadata:
+      labels:
+        owner: obz-devops
+        node-pool: rayservice-worker
+    spec: 
+      nodeClassRef:
+        group: karpenter.k8s.aws  # Updated since only a single version will be served
+        kind: EC2NodeClass      
+        name: rayservice  
+      taints:
+        - key: ray.io/node-type
+          value: worker
+          effect: NoSchedule               
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["g4dn.xlarge"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b", "us-east-1c"]
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.sh/capacity-type # If not included, the webhook for the AWS cloud provider will default to on-demand
+          operator: In
+          values: ["on-demand"]
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 30s
+  limits:
+    cpu: "1000"
+    memory: 1000Gi       
+
+
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: rayservice-head
+spec:
+  template:
+    metadata:
+      labels:
+        owner: obz-devops
+        node-pool: rayservice-head
+    spec: 
+      nodeClassRef:
+        group: karpenter.k8s.aws  # Updated since only a single version will be served
+        kind: EC2NodeClass      
+        name: rayservice
+      taints:
+        - key: ray.io/node-type
+          value: head
+          effect: NoSchedule               
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["m5a.large", "m5a.xlarge"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b", "us-east-1c"]
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.sh/capacity-type # If not included, the webhook for the AWS cloud provider will default to on-demand
+          operator: In
+          values: ["on-demand"]
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 60s
+  limits:
+    cpu: "1000"
+    memory: 1000Gi    
+
+---
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: rayservice
+spec:
+  amiFamily: Bottlerocket 
+  amiSelectorTerms:
+    - alias: bottlerocket@latest
+  instanceProfile: "jarvis-kuberay-cluster-worker-i" 
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "jarvis-kuberay-cluster" 
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "jarvis-kuberay-cluster"
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeType: gp3
+        volumeSize: 4Gi
+        deleteOnTermination: true
+        # encrypted: true
+        # kmsKeyID: "f019a451-b9e5-4286-9fa7-308f7feb8cee"           
+    # Bottlerocket data volume
+    - deviceName: /dev/xvdb
+      ebs:
+        volumeType: gp3
+        volumeSize: 100Gi
+        deleteOnTermination: true   
+        # encrypted: true
+        # kmsKeyID: "f019a451-b9e5-4286-9fa7-308f7feb8cee"          
+  # Optional, configures IMDS for the instance
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required
+  tags:
+    cost-profile: jarvis-kuberay-cluster            
+

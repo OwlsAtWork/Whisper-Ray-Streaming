@@ -14,7 +14,8 @@ metadata:
   name: whisper-streaming
   namespace: app
 spec:
-  deploymentUnhealthySecondThreshold: 300
+  deploymentUnhealthySecondThreshold: 2000
+  serviceUnhealthySecondThreshold: 2000  
   rayClusterConfig:
     enableInTreeAutoscaling: true
     headGroupSpec:
@@ -33,9 +34,12 @@ spec:
                     secretKeyRef:
                       name: hf-token
                       key: token
-              image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v3
+              #image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
+              #image: rayproject/ray-ml:2.9.2-py310
+              image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
               imagePullPolicy: Always
               name: ray-head
+              
               ports:
                 - containerPort: 6379
                   name: gcs
@@ -52,7 +56,7 @@ spec:
               resources:
                 limits:
                   cpu: "2"
-                  memory: 16G
+                  memory: 10G
                 requests:
                   cpu: "2"
                   memory: 8G
@@ -66,13 +70,20 @@ spec:
           volumes:
             - emptyDir: {}
               name: ray-logs
+          nodeSelector:
+            node-pool: rayservice-head              
+          tolerations:
+            - key: "ray.io/node-type"
+              operator: "Equal"
+              value: "head"
+              effect: "NoSchedule"              
     rayVersion: 2.9.2
     workerGroupSpecs:
       - groupName: gpu-group
         maxReplicas: 20
         minReplicas: 1
         rayStartParams: {}
-        replicas: 2
+        replicas: 1
         template:
           spec:
             containers:
@@ -82,7 +93,7 @@ spec:
                       secretKeyRef:
                         name: hf-token
                         key: token
-                image: 975226449092.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v3
+                image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:test
                 imagePullPolicy: Always
                 name: ray-worker
                 resources:
@@ -94,6 +105,8 @@ spec:
                     cpu: 3
                     memory: 12G
                     nvidia.com/gpu: 1
+            nodeSelector:
+              node-pool: rayservice-worker               
             tolerations:
               - effect: NoSchedule
                 key: ray.io/node-type
@@ -129,4 +142,3 @@ spec:
             min_replicas: 1
             max_replicas: 1
             initial_replicas: 1
-  serviceUnhealthySecondThreshold: 900
