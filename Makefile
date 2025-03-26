@@ -1,5 +1,6 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 INFRA_ROOT := $(GIT_ROOT)/infra
+JARVIS_INFRA_ROOT := $(GIT_ROOT)/infrastructure/workload/rayservice
 VERSION ?= local
 RELEASE_VERSION ?= v1
 TF_INFRA_ROOT := $(INFRA_ROOT)
@@ -35,6 +36,12 @@ deploy-ray-service:
 undeploy-ray-service:
 	kubectl delete -f $(GIT_ROOT)/Whisper-RayService.yaml
 
+
+deploy-jarvis-ray-service:
+	kubectl apply -f $(JARVIS_INFRA_ROOT)/stack.yaml
+
+undeploy-jarvis-ray-service:
+	kubectl delete -f $(JARVIS_INFRA_ROOT)/stack.yaml
 
 create_zip:
 	@echo "Creating ZIP file: $(TARGET_ZIP)"
