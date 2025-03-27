@@ -38,9 +38,18 @@ class TranscriptionServer:
         self.asr_pipeline = ASRFactory.create_asr_pipeline("faster_whisper")
         logger.info("VAD and ASR pipelines created successfully")
         self.debug_output = {
-            "transcriptions_timestamp": [],
-            "silence_detection_timestamp": [],
-            "client_id": None
+            "transcriptions_timestamp": {},
+            "silence_detection_timestamp": {},
+            "silence_threshold_seconds": 0.5,
+            "min_speech_seconds": 0.5,
+            "max_buffer_seconds": 3000.0,
+            "buffer_context_seconds_for_vad": 2.0,
+            "client_id": None,
+            "original_buffer_size": None,
+            "audio_shape": None,
+            "audio_dtype": None,
+            "audio_duration": None,
+            "total_processing_time": None,
         }
         
 

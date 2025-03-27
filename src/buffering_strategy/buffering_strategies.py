@@ -7,6 +7,7 @@ import time
 from fastapi import WebSocket
 from multiprocessing.reduction import send_handle
 from ray.serve.handle import DeploymentHandle
+from ..datetime_utils import get_current_time_string_with_milliseconds, get_current_seconds
 
 from .buffering_strategy_interface import BufferingStrategyInterface
 
@@ -25,7 +26,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         self.min_speech_seconds = float(os.environ.get('BUFFERING_MIN_SPEECH_SECONDS', kwargs.get('min_speech_seconds', 0.5)))
         self.max_buffer_seconds = float(os.environ.get('BUFFERING_MAX_BUFFER_SECONDS', kwargs.get('max_buffer_seconds', 3000.0)))
         self.error_if_not_realtime = kwargs.get('error_if_not_realtime', False)
-        self.buffer_context_seconds_for_vad = float(os.environ.get('BUFFERING_BUFFER_CONTEXT_SECONDS_FOR_VAD', 5.0))
+        self.buffer_context_seconds_for_vad = float(os.environ.get('BUFFERING_BUFFER_CONTEXT_SECONDS_FOR_VAD', 2.0))
 
         self.processing_flag = False
         self.last_chunk_time = time.time()
@@ -85,7 +86,11 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
             logger.error(f"Error creating scratch buffer: {e}")
             return
 
-        vad_results = await vad_handle.detect_activity.remote(client=self.client, debug_output=debug_output)
+        start_time = get_current_seconds()
+        start_time_str = get_current_time_string_with_milliseconds()
+        vad_results = await vad_handle.detect_activity.remote(client=self.client)
+        end_time_str = get_current_time_string_with_milliseconds()
+        vad_time = get_current_seconds() - start_time
         logger.debug(f"VAD results: {vad_results}")
 
         if not vad_results:
@@ -110,6 +115,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
                 logger.debug(f"Silence detected, processing {buffer_duration:.2f}s of audio")
                 self.processing_flag = True
                 self.client.buffer.clear()
+                debug_output["silence_detection_timestamp"]= {"start_time": start_time_str, "end_time": end_time_str, "duration_in_seconds": vad_time}
                 await self.process_audio_async(websocket, send_handle, asr_handle, debug_output)
             else:
                 logger.debug("Not enough speech detected, restoring buffer")

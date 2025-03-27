@@ -37,6 +37,15 @@ undeploy-ray-service:
 	kubectl delete -f $(GIT_ROOT)/Whisper-RayService.yaml
 
 
+run-ray-service:
+	python -m src.voice_stream_ai_server
+
+stop-ray-service:
+	ray stop
+
+start-ray-service:
+	ray start --head
+
 deploy-jarvis-ray-service:
 	kubectl apply -f $(JARVIS_INFRA_ROOT)/stack.yaml
 

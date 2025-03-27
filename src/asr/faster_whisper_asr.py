@@ -1,5 +1,6 @@
 import io
 import logging
+from math import trunc
 import time
 import traceback
 
@@ -180,8 +181,8 @@ class FasterWhisperASR(ASRInterface):
             logger.info("Starting transcription")
             start_time = time.time()
             
-            current_index = len(debug_output["transcriptions_timestamp"])
-            debug_output["transcriptions_timestamp"].append({"transcription_index": current_index, "start_time": get_current_time_string_with_milliseconds(), "end_time": None, "duration": None})
+            
+            debug_output["transcriptions_timestamp"]={"start_time": get_current_time_string_with_milliseconds(), "end_time": None, "duration_in_seconds": None}
             segments, info = self.asr_pipeline.transcribe(
                 audio_data, 
                 word_timestamps=True, 
@@ -190,15 +191,25 @@ class FasterWhisperASR(ASRInterface):
                 vad_filter=True,
             )
             logger.info("Transcription completed")
-            debug_output["transcriptions_timestamp"][current_index]["end_time"] = get_current_time_string_with_milliseconds()
-            
+            debug_output["transcriptions_timestamp"]["end_time"] = get_current_time_string_with_milliseconds()
             transcription_time = time.time() - start_time
+            debug_output["transcriptions_timestamp"]["duration_in_seconds"] = f"{transcription_time:.4f}"
+            
             logger.debug(f"Completed transcription in {transcription_time:.2f} seconds")
 
             segments = list(segments)  # Ensure segments is a list
             logger.debug(f"Generated {len(segments)} segments")
-    
             
+            debug_output["original_buffer_size"] = len(client.scratch_buffer)
+            debug_output["audio_shape"] = audio_data.shape
+            debug_output["audio_dtype"] = str(audio_data.dtype)
+            debug_output["audio_duration"] = f"{len(audio_data) / 16000} seconds"  # Assuming 16kHz sample rate
+            
+            silence_detection_duration = debug_output["silence_detection_timestamp"]["duration_in_seconds"]
+            silence_threshold_seconds = debug_output["silence_threshold_seconds"]
+            total_processing_time = silence_detection_duration + silence_threshold_seconds + transcription_time
+            debug_output["total_processing_time"] = total_processing_time
+                
             flattened_words = [word for segment in segments for word in segment.words]
             to_return = {
                 "language": info.language,
@@ -212,13 +223,7 @@ class FasterWhisperASR(ASRInterface):
                         "probability": w.probability
                     } for w in flattened_words
                 ],
-                "debug_info": {
-                    "original_buffer_size": len(client.scratch_buffer),
-                    "audio_shape": audio_data.shape,
-                    "audio_dtype": str(audio_data.dtype),
-                    "audio_duration": f"{len(audio_data) / 16000:.2f} seconds"  # Assuming 16kHz sample rate
-                },
-                "debug_output": debug_output
+                "metrics": debug_output
             }
             return to_return
 
