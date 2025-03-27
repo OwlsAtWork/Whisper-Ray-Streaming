@@ -26,7 +26,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         self.min_speech_seconds = float(os.environ.get('BUFFERING_MIN_SPEECH_SECONDS', kwargs.get('min_speech_seconds', 0.5)))
         self.max_buffer_seconds = float(os.environ.get('BUFFERING_MAX_BUFFER_SECONDS', kwargs.get('max_buffer_seconds', 3000.0)))
         self.error_if_not_realtime = kwargs.get('error_if_not_realtime', False)
-        self.buffer_context_seconds_for_vad = float(os.environ.get('BUFFERING_BUFFER_CONTEXT_SECONDS_FOR_VAD', 2.0))
+        self.buffer_context_seconds_for_vad = float(os.environ.get('BUFFERING_BUFFER_CONTEXT_SECONDS_FOR_VAD', 1.0))
 
         self.processing_flag = False
         self.last_chunk_time = time.time()
