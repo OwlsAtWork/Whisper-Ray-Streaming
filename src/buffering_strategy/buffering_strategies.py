@@ -1,3 +1,6 @@
+import faulthandler
+faulthandler.enable()
+
 import asyncio
 import json
 import logging

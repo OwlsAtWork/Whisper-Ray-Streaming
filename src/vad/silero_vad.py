@@ -1,3 +1,6 @@
+import faulthandler
+faulthandler.enable()
+
 from curses import delay_output
 import io
 import logging
