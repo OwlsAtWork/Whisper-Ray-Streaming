@@ -122,7 +122,7 @@ language_codes = {
 
 
 @serve.deployment(
-    ray_actor_options={"num_cpus": 1},
+    ray_actor_options={"num_gpus": 2},
     autoscaling_config={"min_replicas": 1, "max_replicas": 3, "target_num_ongoing_requests_per_replica": 8, "initial_replicas": 1},
     max_ongoing_requests=10,
 )
@@ -133,8 +133,8 @@ class FasterWhisperASR(ASRInterface):
         logger.info(f"Using model {model_size} for transcription")
         self.asr_pipeline = WhisperModel(
             model_size, 
-            device="cpu",
-            compute_type="float32"
+            device="cuda",
+            compute_type="float16"
         )
         
     async def batch_transcribe(self, client):

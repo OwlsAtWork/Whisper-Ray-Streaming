@@ -19,7 +19,7 @@ logger.setLevel(logging.INFO)
 
 
 @serve.deployment(
-    ray_actor_options={"num_cpus": 1, "num_gpus": 1},
+    ray_actor_options={"num_cpus": 1},
     autoscaling_config={"min_replicas": 1, "max_replicas": 3, "target_num_ongoing_requests_per_replica": 8, "initial_replicas": 1},
     max_ongoing_requests=10,
 )

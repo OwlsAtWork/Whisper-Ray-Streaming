@@ -133,7 +133,7 @@ spec:
       - name: default
         import_path: src.voice_stream_ai_server:entrypoint
         runtime_env:
-          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/317de3ef07bdc634d40f46967f1008dd9d3c83a004c11aa91d41a0452b9dca56.zip"
+          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/a32ccac1911295d795191c8da486e280b4c8a3edc9bdcae0c72938303bd49abe.zip"
         deployments:
         - name: TranscriptionServer
           max_concurrent_queries: 100

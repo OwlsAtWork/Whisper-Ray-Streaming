@@ -54,17 +54,17 @@ undeploy-jarvis-ray-service:
 
 create_zip:
 	@echo "Creating ZIP file: $(TARGET_ZIP)"
-	@zip -r "$(TARGET_ZIP)" . -x "infra_*/*" ".git/*"
+	@zip -r "$(TARGET_ZIP)" . -x "infra*/*" ".git/*"
  
-rename_zip:
+rename_and_upload_to_s3:
 	@hash=$$(sha256sum "$(TARGET_ZIP)" | awk '{print $$1}'); \
-	mv "$(TARGET_ZIP)" "$$hash.zip"; \
-	echo "Renamed $(TARGET_ZIP) to $$hash.zip"
+	new_name="$$hash.zip"; \
+	mv "$(TARGET_ZIP)" "$$new_name"; \
+	echo "Renamed $(TARGET_ZIP) to $$new_name"; \
+	aws s3 cp "$$new_name" s3://jarvis-whisper/"$$new_name"; \
+	echo "https://jarvis-whisper.s3.us-east-1.amazonaws.com/$$new_name"; \
+	rm "$$new_name" && echo "Deleted $$new_name"
 
-# upload_to_s3:
-# 	aws s3 cp $(TARGET_ZIP) s3://jarvis-whisper/$(TARGET_ZIP)
-# 	@echo "https://jarvis-whisper.s3.us-east-1.amazonaws.com/$(TARGET_ZIP)"
 
-
-create_and_rename_zip: create_zip rename_zip
+create_and_rename_and_upload_to_s3: create_zip rename_and_upload_to_s3
 
