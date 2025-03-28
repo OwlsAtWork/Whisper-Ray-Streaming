@@ -78,6 +78,11 @@ class SileroVAD(VADInterface):
                 if wav.size(1) == 0:
                     return []
 
+            # Move wav tensor explicitly to GPU (Important!)
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            wav = wav.to(device)
+
+
             logger.info("Detecting speech timestamps...")
             speech_timestamps = self.get_speech_timestamps(wav, self.model, return_seconds=True)
             vad_segments = []
