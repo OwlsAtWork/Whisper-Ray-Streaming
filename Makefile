@@ -61,6 +61,10 @@ rename_zip:
 	mv "$(TARGET_ZIP)" "$$hash.zip"; \
 	echo "Renamed $(TARGET_ZIP) to $$hash.zip"
 
+# upload_to_s3:
+# 	aws s3 cp $(TARGET_ZIP) s3://jarvis-whisper/$(TARGET_ZIP)
+# 	@echo "https://jarvis-whisper.s3.us-east-1.amazonaws.com/$(TARGET_ZIP)"
+
 
 create_and_rename_zip: create_zip rename_zip
 

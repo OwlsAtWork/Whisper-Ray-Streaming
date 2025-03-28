@@ -133,8 +133,8 @@ class FasterWhisperASR(ASRInterface):
         logger.info(f"Using model {model_size} for transcription")
         self.asr_pipeline = WhisperModel(
             model_size, 
-            device="cuda",
-            compute_type="float16"
+            device="cpu",
+            compute_type="float32"
         )
         
     async def batch_transcribe(self, client):
