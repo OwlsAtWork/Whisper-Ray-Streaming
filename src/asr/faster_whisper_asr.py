@@ -15,7 +15,7 @@ from .asr_interface import ASRInterface
 from ..datetime_utils import get_current_time_string_with_milliseconds
 
 logger = logging.getLogger("ray.serve")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 language_codes = {
     "afrikaans": "af",

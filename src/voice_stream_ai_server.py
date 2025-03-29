@@ -16,7 +16,7 @@ from .vad.silero_vad import SileroVAD
 from .vad.vad_factory import VADFactory
 
 logger = logging.getLogger("ray.serve")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 fastapi_app = FastAPI()
 
