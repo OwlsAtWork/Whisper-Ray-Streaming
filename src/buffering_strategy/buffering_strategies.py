@@ -78,17 +78,18 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
 
         # Safely get the original scratch buffer, or default to an empty bytearray
         original_scratch_buffer = getattr(self.client, 'scratch_buffer', bytearray())
-        try:
-            bytes_per_second = self.client.sampling_rate * self.client.samples_width
-            bytes_in_buffer_context_seconds = int(bytes_per_second * self.buffer_context_seconds_for_vad)
-            if (len(self.client.buffer) > bytes_in_buffer_context_seconds):
-                self.client.scratch_buffer = bytearray(self.client.buffer[-bytes_in_buffer_context_seconds:])
-            else:
-                self.client.scratch_buffer = bytearray(self.client.buffer)
-        except Exception as e:
-            logger.error(f"Error creating scratch buffer: {e}")
-            return
+        # try:
+        #     bytes_per_second = self.client.sampling_rate * self.client.samples_width
+        #     bytes_in_buffer_context_seconds = int(bytes_per_second * self.buffer_context_seconds_for_vad)
+        #     if (len(self.client.buffer) > bytes_in_buffer_context_seconds):
+        #         self.client.scratch_buffer = bytearray(self.client.buffer[-bytes_in_buffer_context_seconds:])
+        #     else:
+        #         self.client.scratch_buffer = bytearray(self.client.buffer)
+        # except Exception as e:
+        #     logger.error(f"Error creating scratch buffer: {e}")
+        #     return
 
+        self.client.scratch_buffer = bytearray(self.client.buffer)
         start_time = get_current_seconds()
         start_time_str = get_current_time_string_with_milliseconds()
         vad_results = await vad_handle.detect_activity.remote(client=self.client)
