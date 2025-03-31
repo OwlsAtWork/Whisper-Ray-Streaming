@@ -25,7 +25,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         logger.info("Initializing SilenceAtEndOfChunk buffering strategy")
         self.client = client
 
-        self.silence_threshold_seconds = float(os.environ.get('BUFFERING_SILENCE_THRESHOLD_SECONDS', kwargs.get('silence_threshold_seconds', 0.5)))
+        self.silence_threshold_seconds = float(os.environ.get('BUFFERING_SILENCE_THRESHOLD_SECONDS', kwargs.get('silence_threshold_seconds', 0.6)))
         self.min_speech_seconds = float(os.environ.get('BUFFERING_MIN_SPEECH_SECONDS', kwargs.get('min_speech_seconds', 0.5)))
         self.max_buffer_seconds = float(os.environ.get('BUFFERING_MAX_BUFFER_SECONDS', kwargs.get('max_buffer_seconds', 3000.0)))
         self.error_if_not_realtime = kwargs.get('error_if_not_realtime', False)

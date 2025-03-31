@@ -128,7 +128,7 @@ language_codes = {
 )
 class FasterWhisperASR(ASRInterface):
     def __init__(self, **kwargs):
-        model_size = kwargs.get('model_size', "deepdml/faster-whisper-large-v3-turbo-ct2")
+        model_size = kwargs.get('model_size', "large-v3")
         # Run on GPU with FP16
         logger.info(f"Using model {model_size} for transcription")
         self.asr_pipeline = WhisperModel(
