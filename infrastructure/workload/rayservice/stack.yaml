@@ -15,7 +15,7 @@ metadata:
   namespace: app
 spec:
   deploymentUnhealthySecondThreshold: 2000
-  serviceUnhealthySecondThreshold: 2000  
+  serviceUnhealthySecondThreshold: 2000
   rayClusterConfig:
     enableInTreeAutoscaling: true
     headGroupSpec:
@@ -39,7 +39,7 @@ spec:
               image: 626635410672.dkr.ecr.us-east-1.amazonaws.com/whisper-ray-service:v1
               imagePullPolicy: Always
               name: ray-head
-              
+
               ports:
                 - containerPort: 6379
                   name: gcs
@@ -75,12 +75,12 @@ spec:
             - name: ray-logs
               emptyDir: {}
           nodeSelector:
-            node-pool: rayservice-head              
+            node-pool: rayservice-head
           tolerations:
             - key: "ray.io/node-type"
               operator: "Equal"
               value: "head"
-              effect: "NoSchedule"              
+              effect: "NoSchedule"
     rayVersion: 2.9.2
     workerGroupSpecs:
       - groupName: gpu-group
@@ -122,7 +122,7 @@ spec:
               - name: core-dump-volume
                 emptyDir: {}
             nodeSelector:
-              node-pool: rayservice-worker               
+              node-pool: rayservice-worker
             tolerations:
               - effect: NoSchedule
                 key: ray.io/node-type
@@ -133,7 +133,7 @@ spec:
       - name: default
         import_path: src.voice_stream_ai_server:entrypoint
         runtime_env:
-          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/ca1c079d3278a4a0e7b234280eb004eced45881ac9e42ddf7a3ad5995b7ce716.zip"
+          working_dir: "https://jarvis-whisper.s3.us-east-1.amazonaws.com/91c3e8fda4da0e1243c4ef625c1be731a36fd8b38c3a6fb779624b8257b7d599.zip"
         deployments:
         - name: TranscriptionServer
           max_concurrent_queries: 100

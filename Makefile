@@ -54,7 +54,7 @@ undeploy-jarvis-ray-service:
 
 create_zip:
 	@echo "Creating ZIP file: $(TARGET_ZIP)"
-	@zip -r "$(TARGET_ZIP)" . -x "infra*/*" ".git/*"
+	@zip -r "$(TARGET_ZIP)" . -x "infra*/*" ".git/*" ".venv/*"
  
 rename_and_upload_to_s3:
 	@hash=$$(sha256sum "$(TARGET_ZIP)" | awk '{print $$1}'); \
