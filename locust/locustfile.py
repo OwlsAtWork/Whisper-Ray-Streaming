@@ -98,7 +98,7 @@ class WebSocketUser(User):
 
 class EnglishStreamWhisperWebSocketUser(WebSocketUser):
     host = "ws://localhost:8000"
-    audio_file_path = "./data/en_raw"
+    audio_file_path = "./data/en"
 
 
 
